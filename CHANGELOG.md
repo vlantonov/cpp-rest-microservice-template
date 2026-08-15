@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-16
+
+### Fixed
+
+- Replaced non-existent `opentelemetry-cpp::opentelemetry_api`, `opentelemetry-cpp::opentelemetry_sdk`, and `opentelemetry-cpp::opentelemetry_exporter_otlp_http` targets in `src/infrastructure/CMakeLists.txt` with the aggregate `opentelemetry-cpp::opentelemetry-cpp`. The Conan 2 `CMakeDeps` generator for `opentelemetry-cpp/1.16.1` does not produce per-library component targets with those names (the recipe defines components like `opentelemetry_trace`, `opentelemetry_common`, etc., but not `opentelemetry_api` or `opentelemetry_sdk`); CMake found the package config but failed at the generate step when resolving the missing IMPORTED targets. Using the recipe-documented aggregate target resolves the error across all four CI workflows (Release, Debug/Coverage, RelWithDebInfo/Sanitizers, Debug/Valgrind).
+
 ## [0.1.2] - 2026-08-16
 
 ### Fixed

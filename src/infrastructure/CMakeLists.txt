@@ -16,9 +16,7 @@ target_link_libraries(microservice_infra
     PUBLIC  microservice_domain
     PRIVATE Drogon::Drogon
     PRIVATE spdlog::spdlog
-    PRIVATE opentelemetry-cpp::opentelemetry_api
-    PRIVATE opentelemetry-cpp::opentelemetry_sdk
-    PRIVATE opentelemetry-cpp::opentelemetry_exporter_otlp_http
+    PRIVATE opentelemetry-cpp::opentelemetry-cpp
     PRIVATE prometheus-cpp::core
 )
 
