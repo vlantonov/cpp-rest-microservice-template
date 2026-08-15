@@ -1,0 +1,99 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/Debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Debug/conan_toolchain.cmake"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/Release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Release/conan_toolchain.cmake",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/Coverage",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Debug/conan_toolchain.cmake",
+        "ENABLE_COVERAGE": "ON"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "ASAN",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/ASAN",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/conan_toolchain.cmake",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -O1 -g"
+      }
+    },
+    {
+      "name": "tsan",
+      "displayName": "TSAN",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/TSAN",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/conan_toolchain.cmake",
+        "CMAKE_CXX_FLAGS": "-fsanitize=thread -O1 -g"
+      }
+    },
+    {
+      "name": "msan",
+      "displayName": "MSAN",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/MSAN",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/conan_toolchain.cmake",
+        "CMAKE_CXX_FLAGS": "-fsanitize=memory -O1 -g"
+      }
+    },
+    {
+      "name": "ubsan",
+      "displayName": "UBSAN",
+      "inherits": "base",
+      "binaryDir": "${sourceDir}/build/UBSAN",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/conan_toolchain.cmake",
+        "CMAKE_CXX_FLAGS": "-fsanitize=undefined -O1 -g"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "debug",   "configurePreset": "debug"   },
+    { "name": "release", "configurePreset": "release" },
+    { "name": "coverage","configurePreset": "coverage"},
+    { "name": "asan",    "configurePreset": "asan"    },
+    { "name": "tsan",    "configurePreset": "tsan"    },
+    { "name": "msan",    "configurePreset": "msan"    },
+    { "name": "ubsan",   "configurePreset": "ubsan"   }
+  ]
+}

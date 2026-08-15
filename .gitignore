@@ -1,3 +1,9 @@
+build/
+.conan2/
+cmake-build-*/
+CMakeUserPresets.json
+compile_commands.json
+
 # Prerequisites
 *.d
 
