@@ -124,4 +124,5 @@ TEST_CASE("GreetingUseCase::execute — metrics recorded", "[domain]") {
     use_case.execute(*req);
 
     Verify(Method(mock_metrics, recordRequest)).Once();
+    Verify(Method(mock_metrics, recordLatency)).Once();
 }

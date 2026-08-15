@@ -2,7 +2,6 @@ find_package(Catch2 3 REQUIRED)
 find_package(fakeit    REQUIRED)
 
 add_executable(microservice_tests
-    TestMain.cpp
     domain/GreetingUseCaseTest.cpp
     infrastructure/SpdlogLoggerTest.cpp
 )

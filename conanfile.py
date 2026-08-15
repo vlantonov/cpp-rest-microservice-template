@@ -1,11 +1,14 @@
 from conan import ConanFile
-from conan.tools.cmake import CMakeDeps, CMakeToolchain
+from conan.tools.cmake import CMakeDeps, CMakeToolchain, cmake_layout
 
 
 class MicroserviceTemplate(ConanFile):
     name = "cpp-rest-microservice-template"
     version = "1.0.0"
     settings = "os", "compiler", "build_type", "arch"
+
+    def layout(self):
+        cmake_layout(self)
 
     def requirements(self):
         self.requires("drogon/1.9.5")
