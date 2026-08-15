@@ -1,0 +1,76 @@
+name: Code Coverage
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: Code Coverage (GCC)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Share the Debug cache with the valgrind workflow to avoid duplicate builds
+      # when both jobs land on the same runner (same cache key).
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-gcc-debug-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-gcc-debug-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip gcc-12 g++-12 lcov libstdc++-12-dev
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      - name: Set up Conan default profile (gcc)
+        run: |
+          conan profile detect --force
+          cp profiles/gcc ~/.conan2/profiles/default
+
+      # The coverage CMake preset uses build/Debug/conan_toolchain.cmake, so we
+      # install with build_type=Debug to produce that file via cmake_layout.
+      - name: Install dependencies (Debug)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=Debug \
+            -s:b build_type=Debug
+
+      # cmake --preset coverage: binaryDir=build/Coverage, ENABLE_COVERAGE=ON,
+      # toolchain=build/Debug/conan_toolchain.cmake (see CMakePresets.json).
+      - name: Configure (Coverage)
+        run: cmake --preset coverage
+
+      - name: Build
+        run: cmake --build --preset coverage --parallel
+
+      # cov_data target: zero counters → run tests → lcov capture → lcov filter
+      # Output: build/Coverage/cov.info.cleaned  (WORKING_DIRECTORY=CMAKE_BINARY_DIR)
+      - name: Generate coverage data
+        run: cmake --build --preset coverage --target cov_data
+
+      - name: Publish coverage report
+        uses: zgosalvez/github-actions-report-lcov@v7.2.0
+        with:
+          coverage-files: build/Coverage/cov.info.cleaned
+          minimum-coverage: 70
+          artifact-name: code-coverage-report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: ${{ github.workspace }}

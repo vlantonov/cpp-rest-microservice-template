@@ -1,0 +1,79 @@
+name: Valgrind Memcheck
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  valgrind:
+    name: Valgrind Memcheck (GCC Debug)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Separate cache key for Debug so it doesn't evict the Release entry.
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-gcc-debug-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-gcc-debug-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip gcc-12 g++-12 valgrind libstdc++-12-dev
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      - name: Set up Conan default profile (gcc)
+        run: |
+          conan profile detect --force
+          cp profiles/gcc ~/.conan2/profiles/default
+
+      # Debug symbols are essential for Valgrind stack traces; build Debug.
+      - name: Install dependencies (Debug)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=Debug \
+            -s:b build_type=Debug
+
+      - name: Configure (Debug)
+        run: cmake --preset debug
+
+      - name: Build test binary
+        run: cmake --build --preset debug --target microservice_tests --parallel
+
+      - name: Run Valgrind memcheck
+        run: |
+          valgrind \
+            --tool=memcheck \
+            --leak-check=full \
+            --show-reachable=yes \
+            --num-callers=40 \
+            --track-origins=yes \
+            --error-exitcode=1 \
+            --log-file=valgrind-memcheck.txt \
+            ./build/Debug/tests/microservice_tests
+
+      # Upload the log even on failure so leaks are inspectable in the Actions UI.
+      - name: Upload Valgrind report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: valgrind-memcheck
+          path: valgrind-memcheck.txt
+          retention-days: 14

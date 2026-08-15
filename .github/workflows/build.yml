@@ -1,0 +1,87 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# Cancel in-flight runs for the same branch on new pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.compiler }}, Release)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            conan_profile: gcc
+            extra_packages: gcc-12 g++-12
+          - compiler: clang
+            conan_profile: clang
+            extra_packages: clang-16 clang++-16
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Cache the Conan 2 binary package store; invalidates when conanfile.py changes.
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-${{ matrix.compiler }}-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-${{ matrix.compiler }}-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip libstdc++-12-dev \
+            ${{ matrix.extra_packages }}
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      # conan profile detect creates a default profile; we overwrite it with our
+      # pinned profile so compiler.version, cppstd=20, and CC/CXX are exact.
+      - name: Set up Conan default profile
+        run: |
+          conan profile detect --force
+          cp profiles/${{ matrix.conan_profile }} ~/.conan2/profiles/default
+
+      # Pass -s:h and -s:b so both host and build profiles get build_type=Release.
+      # Without -s:b, Conan uses build_type=None for the build profile, which causes
+      # tools like protoc to be sourced into a "build/None" folder and fail.
+      - name: Install dependencies (Release)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=Release \
+            -s:b build_type=Release
+
+      - name: Configure (Release)
+        run: cmake --preset release
+
+      - name: Build
+        run: cmake --build --preset release --parallel
+
+      - name: Test
+        run: ctest --test-dir build/Release -VV --progress
+
+      # The GCC Release binary is retained for optional downstream jobs (e.g. valgrind).
+      - name: Upload test binary
+        if: matrix.compiler == 'gcc'
+        uses: actions/upload-artifact@v7
+        with:
+          name: test_binary_${{ matrix.compiler }}
+          path: build/Release/tests/microservice_tests
+          retention-days: 3

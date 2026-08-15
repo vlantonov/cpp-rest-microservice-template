@@ -1,0 +1,175 @@
+name: Sanitizers
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ---------------------------------------------------------------------------
+# Shared setup steps are duplicated per job intentionally: GitHub Actions
+# has no native job-template mechanism, and composite actions would add
+# indirection without benefit for three simple jobs.
+# ---------------------------------------------------------------------------
+
+jobs:
+  # ── AddressSanitizer ───────────────────────────────────────────────────────
+  asan:
+    name: AddressSanitizer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang-asan-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang-asan-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip clang-16 clang++-16 libstdc++-12-dev
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      - name: Set up Conan default profile (clang)
+        run: |
+          conan profile detect --force
+          cp profiles/clang ~/.conan2/profiles/default
+
+      # Dependencies are built in RelWithDebInfo; only our code gets ASAN flags
+      # (injected by the cmake preset via CMAKE_CXX_FLAGS).
+      - name: Install dependencies (RelWithDebInfo)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=RelWithDebInfo \
+            -s:b build_type=RelWithDebInfo
+
+      - name: Configure (ASAN preset)
+        run: cmake --preset asan
+
+      - name: Build
+        run: cmake --build --preset asan --parallel
+
+      - name: Test (ASAN)
+        run: ctest --test-dir build/ASAN -VV --progress
+
+  # ── ThreadSanitizer ────────────────────────────────────────────────────────
+  tsan:
+    name: ThreadSanitizer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang-tsan-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang-tsan-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip clang-16 clang++-16 libstdc++-12-dev
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      - name: Set up Conan default profile (clang)
+        run: |
+          conan profile detect --force
+          cp profiles/clang ~/.conan2/profiles/default
+
+      - name: Install dependencies (RelWithDebInfo)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=RelWithDebInfo \
+            -s:b build_type=RelWithDebInfo
+
+      - name: Configure (TSAN preset)
+        run: cmake --preset tsan
+
+      - name: Build
+        run: cmake --build --preset tsan --parallel
+
+      - name: Test (TSAN)
+        run: ctest --test-dir build/TSAN -VV --progress
+
+  # ── UndefinedBehaviourSanitizer ────────────────────────────────────────────
+  ubsan:
+    name: UndefinedBehaviourSanitizer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang-ubsan-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang-ubsan-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build python3-pip clang-16 clang++-16 libstdc++-12-dev
+
+      - name: Install Conan
+        run: python3 -m pip install "conan>=2,<3"
+
+      - name: Set up Conan default profile (clang)
+        run: |
+          conan profile detect --force
+          cp profiles/clang ~/.conan2/profiles/default
+
+      - name: Install dependencies (RelWithDebInfo)
+        run: |
+          conan install . \
+            --build=missing \
+            --profile:host=default \
+            --profile:build=default \
+            -s:h build_type=RelWithDebInfo \
+            -s:b build_type=RelWithDebInfo
+
+      - name: Configure (UBSAN preset)
+        run: cmake --preset ubsan
+
+      - name: Build
+        run: cmake --build --preset ubsan --parallel
+
+      - name: Test (UBSAN)
+        run: ctest --test-dir build/UBSAN -VV --progress
+
+  # ── MemorySanitizer (informational — see CA-04) ────────────────────────────
+  # MSAN is omitted from this workflow. MSAN requires a fully instrumented
+  # libc++ (built with -fsanitize=memory). Ubuntu's system libc++ is NOT
+  # instrumented, so every run produces false positives from standard-library
+  # internals. Rather than gate CI on a noisy signal, MSAN is tracked as a
+  # known limitation per DESIGN.md CA-04. Correctness is gated on ASAN and
+  # Valgrind instead. Reintroduce msan job when a custom libc++ Docker layer
+  # is added to the build matrix.
