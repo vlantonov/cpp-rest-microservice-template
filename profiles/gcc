@@ -2,11 +2,16 @@
 os=Linux
 arch=x86_64
 compiler=gcc
-compiler.version=12
+compiler.version=13
 compiler.libcxx=libstdc++11
 compiler.cppstd=20
 build_type=Release
 
+[conf]
+# Tell cmake_layout that Ninja (single-config) is used so generators land at
+# build/<build_type>/generators/ rather than the flat build/generators/ path.
+tools.cmake.cmaketoolchain:generator=Ninja
+
 [buildenv]
-CC=gcc-12
-CXX=g++-12
+CC=gcc
+CXX=g++

@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build python3-pip gcc-12 g++-12 lcov libstdc++-12-dev
+            cmake ninja-build python3-pip lcov
 
       - name: Install Conan
         run: python3 -m pip install "conan>=2,<3"

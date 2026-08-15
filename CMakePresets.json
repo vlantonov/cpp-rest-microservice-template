@@ -15,9 +15,9 @@
       "displayName": "Debug",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/Debug",
+      "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake"
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
@@ -25,9 +25,9 @@
       "displayName": "Release",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/Release",
+      "toolchainFile": "${sourceDir}/build/Release/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Release/generators/conan_toolchain.cmake",
         "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
       }
     },
@@ -36,9 +36,9 @@
       "displayName": "Coverage",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/Coverage",
+      "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
         "ENABLE_COVERAGE": "ON"
       }
     },
@@ -47,9 +47,9 @@
       "displayName": "ASAN",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/ASAN",
+      "toolchainFile": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
         "CMAKE_CXX_FLAGS": "-fsanitize=address -O1 -g"
       }
     },
@@ -58,9 +58,9 @@
       "displayName": "TSAN",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/TSAN",
+      "toolchainFile": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
         "CMAKE_CXX_FLAGS": "-fsanitize=thread -O1 -g"
       }
     },
@@ -69,9 +69,9 @@
       "displayName": "MSAN",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/MSAN",
+      "toolchainFile": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
         "CMAKE_CXX_FLAGS": "-fsanitize=memory -O1 -g"
       }
     },
@@ -80,9 +80,9 @@
       "displayName": "UBSAN",
       "inherits": "base",
       "binaryDir": "${sourceDir}/build/UBSAN",
+      "toolchainFile": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/RelWithDebInfo/generators/conan_toolchain.cmake",
         "CMAKE_CXX_FLAGS": "-fsanitize=undefined -O1 -g"
       }
     }
