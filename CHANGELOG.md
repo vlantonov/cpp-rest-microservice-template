@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-16
+
+### Fixed
+
+- Corrected `find_package(Drogon)` capitalisation in `src/infrastructure/CMakeLists.txt` (was `drogon`, lowercase). Conan 2's `CMakeDeps` generator produces `DrogonConfig.cmake` with a capital D; on Linux's case-sensitive filesystem the lowercase call caused a CMake configuration error that broke CI on every fresh build. The linked target name is updated consistently (`Drogon::Drogon` instead of `drogon::drogon`).
+
+## [0.1.1] - 2026-08-16
+
+### Fixed
+
+- Added missing `toolchainFile` field to every configure preset in `CMakePresets.json`; without it CMake could not locate the Conan-generated toolchain at `${sourceDir}/build/<build_type>/generators/conan_toolchain.cmake` and CI configuration failed on every fresh checkout.
+- Updated GCC Conan profile (`profiles/gcc`) from `compiler.version=12` to `compiler.version=13` to match the `gcc-13` package available on `ubuntu-latest` GitHub Actions runners.
+
 ## [0.1.0] - 2026-08-16 [Released]
 
 ### Added
@@ -36,5 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/requirements/SRS.md` and `docs/design/DESIGN.md` covering functional requirements, non-functional requirements, architecture, interface definitions, and CMake target layout.
 - `docs/ci-cd/cpp-rest-microservice-template-pipeline.md` CI/CD pipeline reference.
 
-[Unreleased]: https://github.com/vlantonov/cpp-rest-microservice-template/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/vlantonov/cpp-rest-microservice-template/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/vlantonov/cpp-rest-microservice-template/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/vlantonov/cpp-rest-microservice-template/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/vlantonov/cpp-rest-microservice-template/releases/tag/v0.1.0
