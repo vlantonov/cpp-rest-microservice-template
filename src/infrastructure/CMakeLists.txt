@@ -1,4 +1,4 @@
-find_package(drogon          REQUIRED)
+find_package(Drogon          REQUIRED)
 find_package(spdlog          REQUIRED)
 find_package(opentelemetry-cpp REQUIRED)
 find_package(prometheus-cpp  REQUIRED)
@@ -14,7 +14,7 @@ add_library(microservice_infra STATIC
 
 target_link_libraries(microservice_infra
     PUBLIC  microservice_domain
-    PRIVATE drogon::drogon
+    PRIVATE Drogon::Drogon
     PRIVATE spdlog::spdlog
     PRIVATE opentelemetry-cpp::opentelemetry_api
     PRIVATE opentelemetry-cpp::opentelemetry_sdk
