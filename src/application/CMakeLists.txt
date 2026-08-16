@@ -1,3 +1,5 @@
+find_package(Drogon REQUIRED)
+
 add_executable(microservice_app
     main.cpp
 )
@@ -9,6 +11,7 @@ target_include_directories(microservice_app
 target_link_libraries(microservice_app
     PRIVATE microservice_domain
     PRIVATE microservice_infra
+    PRIVATE Drogon::Drogon
 )
 
 target_compile_features(microservice_app PRIVATE cxx_std_20)

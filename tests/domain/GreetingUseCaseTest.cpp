@@ -100,7 +100,7 @@ TEST_CASE("GreetingUseCase::execute — logger called once", "[domain]") {
 
     auto req = domain::model::GreetingRequest::create("Bob");
     REQUIRE(req.has_value());
-    use_case.execute(*req);
+    (void)use_case.execute(*req);
 
     Verify(Method(mock_logger, log)).Once();
 }
@@ -121,7 +121,7 @@ TEST_CASE("GreetingUseCase::execute — metrics recorded", "[domain]") {
 
     auto req = domain::model::GreetingRequest::create("Carol");
     REQUIRE(req.has_value());
-    use_case.execute(*req);
+    (void)use_case.execute(*req);
 
     Verify(Method(mock_metrics, recordRequest)).Once();
     Verify(Method(mock_metrics, recordLatency)).Once();
