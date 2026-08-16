@@ -1,9 +1,14 @@
 find_package(Catch2 3 REQUIRED)
-find_package(fakeit    REQUIRED)
+find_package(fakeit  REQUIRED)
+find_package(spdlog  REQUIRED)
 
 add_executable(microservice_tests
     domain/GreetingUseCaseTest.cpp
     infrastructure/SpdlogLoggerTest.cpp
+    # Compiled directly so the test binary does not inherit microservice_infra's
+    # Drogon/Boost transitive link closure (libboost_test_exec_monitor conflicts
+    # with Catch2's main).
+    ${CMAKE_SOURCE_DIR}/src/infrastructure/logging/SpdlogLogger.cpp
 )
 
 target_include_directories(microservice_tests
@@ -12,7 +17,7 @@ target_include_directories(microservice_tests
 
 target_link_libraries(microservice_tests
     PRIVATE microservice_domain
-    PRIVATE microservice_infra
+    PRIVATE spdlog::spdlog
     PRIVATE Catch2::Catch2WithMain
     PRIVATE fakeit::fakeit
 )
