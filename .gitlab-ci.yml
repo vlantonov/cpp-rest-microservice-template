@@ -87,7 +87,7 @@ build-clang:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 git curl pkg-config libssl-dev python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 llvm-16 git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
