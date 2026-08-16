@@ -37,6 +37,7 @@ if(LCOV_PATH AND GCOV_PATH)
             '${CMAKE_SOURCE_DIR}/tests/*'
             '${CMAKE_SOURCE_DIR}/src/infrastructure/*'
             '*/.conan2/*'
+            '*/.conan2-cache/*'
             '/usr/*'
             --ignore-errors unused
             --output-file ${covname}.info.cleaned
@@ -53,6 +54,7 @@ if(LCOV_PATH AND GCOV_PATH)
                 '${CMAKE_SOURCE_DIR}/tests/*'
                 '${CMAKE_SOURCE_DIR}/src/infrastructure/*'
                 '*/.conan2/*'
+                '*/.conan2-cache/*'
                 '/usr/*'
                 --ignore-errors unused
                 --output-file ${covname}.info.cleaned
