@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ---------------------------------------------------------------------------
 # Stage 1 — builder
 # ---------------------------------------------------------------------------
@@ -5,7 +6,10 @@ FROM ubuntu:24.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Cache mounts keep apt indexes off the image layer; no rm -rf needed here.
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         ninja-build \
         gcc \
@@ -15,37 +19,44 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         curl \
         pkg-config \
-        libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+        libssl-dev
 
-# Install Conan 2 into a virtual env to avoid PEP 668 issues
-RUN python3 -m venv /opt/conan-venv \
- && /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
+# venv avoids PEP 668 conflicts; pip cache mount skips re-downloading the wheel.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python3 -m venv /opt/conan-venv \
+ && /opt/conan-venv/bin/pip install "conan>=2,<3"
 
 ENV PATH="/opt/conan-venv/bin:${PATH}"
 
-# Initialise Conan default profile
 RUN conan profile detect --force
 
 WORKDIR /src
 COPY . .
 
-# Use the project GCC profile as the Conan default
+# Use the project GCC profile as the Conan default.
 RUN cp profiles/gcc ~/.conan2/profiles/default
 
-# Install Conan dependencies (Release build)
-RUN conan install . \
+# Cache mount keeps the binary package store across rebuilds; generated
+# toolchain files land under /src/build and are stored in the image layer.
+RUN --mount=type=cache,target=/root/.conan2/p \
+    conan install . \
         --build=missing \
         --profile:host=default \
         --profile:build=default \
         -s:h build_type=Release \
         -s:b build_type=Release
 
-# Configure and build
-RUN cmake --preset release \
- && cmake --build --preset release --parallel "$(nproc)" --target microservice_app
+# Same cache mount required here: CMake resolves headers and libs through it.
+RUN --mount=type=cache,target=/root/.conan2/p \
+    cmake --preset release \
+ && cmake --build --preset release --parallel "$(nproc)" --target microservice_app \
+ && cmake --build --preset release --parallel "$(nproc)" --target microservice_tests
 
-# Strip the binary to reduce image size
+# Failing tests abort the build before Stage 2 is reached.
+RUN --mount=type=cache,target=/root/.conan2/p \
+    ctest --test-dir build/Release -VV --progress
+
+# Strip the binary to reduce image size.
 RUN find build/Release -name microservice_app -type f -exec strip {} +
 
 # ---------------------------------------------------------------------------

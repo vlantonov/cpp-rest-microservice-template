@@ -1,0 +1,292 @@
+# GitLab CI pipeline — mirrors .github/workflows/{build,sanitizers,valgrind,coverage}.yml
+# Stages run in order; independent jobs within a stage execute in parallel.
+
+stages:
+  - build
+  - test
+  - quality
+
+# interruptible: true cancels in-flight runs when a newer commit arrives on the
+# same ref — equivalent to GitHub Actions concurrency cancel-in-progress: true.
+default:
+  interruptible: true
+
+# Conan 2 home pinned inside CI_PROJECT_DIR so GitLab cache paths (which must
+# be relative to CI_PROJECT_DIR) capture the full package store.
+variables:
+  CONAN_HOME: "$CI_PROJECT_DIR/.conan2-cache"
+
+# ---------------------------------------------------------------------------
+# build stage
+# ---------------------------------------------------------------------------
+
+# Builds the Docker image end-to-end; unit tests run inside the builder stage
+# (via ctest) so a test failure causes docker build to fail here.
+docker-build:
+  stage: build
+  image: docker:27
+  services:
+    - docker:27-dind
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_BUILDKIT: "1"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+  before_script:
+    - docker version
+  script:
+    - docker build --progress=plain .
+
+# GCC Release build + unit tests (mirrors build.yml gcc matrix entry).
+build-gcc:
+  stage: build
+  image: ubuntu:24.04
+  cache:
+    key: "conan-gcc-release-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-gcc-release-"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/gcc "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=Release \
+        -s:b build_type=Release
+    - cmake --preset release
+    - cmake --build --preset release --parallel
+    - ctest --test-dir build/Release -VV --progress
+
+# Clang 16 Release build + unit tests (mirrors build.yml clang matrix entry).
+build-clang:
+  stage: build
+  image: ubuntu:24.04
+  cache:
+    key: "conan-clang-release-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-clang-release-"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip clang-16 clang++-16
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/clang "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=Release \
+        -s:b build_type=Release
+    - cmake --preset release
+    - cmake --build --preset release --parallel
+    - ctest --test-dir build/Release -VV --progress
+
+# ---------------------------------------------------------------------------
+# test stage — sanitizers (mirrors sanitizers.yml)
+# Runs automatically on MR to main; available as manual trigger otherwise.
+# ---------------------------------------------------------------------------
+
+sanitizer-asan:
+  stage: test
+  image: ubuntu:24.04
+  cache:
+    key: "conan-clang-asan-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-clang-asan-"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip clang-16 clang++-16
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/clang "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=RelWithDebInfo \
+        -s:b build_type=RelWithDebInfo
+    - cmake --preset asan
+    - cmake --build --preset asan --parallel
+    - ctest --test-dir build/ASAN -VV --progress
+
+sanitizer-tsan:
+  stage: test
+  image: ubuntu:24.04
+  cache:
+    key: "conan-clang-tsan-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-clang-tsan-"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip clang-16 clang++-16
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/clang "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=RelWithDebInfo \
+        -s:b build_type=RelWithDebInfo
+    - cmake --preset tsan
+    - cmake --build --preset tsan --parallel
+    - ctest --test-dir build/TSAN -VV --progress
+
+sanitizer-ubsan:
+  stage: test
+  image: ubuntu:24.04
+  cache:
+    key: "conan-clang-ubsan-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-clang-ubsan-"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip clang-16 clang++-16
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/clang "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=RelWithDebInfo \
+        -s:b build_type=RelWithDebInfo
+    - cmake --preset ubsan
+    - cmake --build --preset ubsan --parallel
+    - ctest --test-dir build/UBSAN -VV --progress
+
+# ---------------------------------------------------------------------------
+# quality stage (mirrors valgrind.yml and coverage.yml)
+# Runs automatically on push to main; available as manual trigger otherwise.
+# ---------------------------------------------------------------------------
+
+valgrind:
+  stage: quality
+  image: ubuntu:24.04
+  cache:
+    key: "conan-gcc-debug-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-gcc-debug-"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip valgrind
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/gcc "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=Debug \
+        -s:b build_type=Debug
+    - cmake --preset debug
+    - cmake --build --preset debug --target microservice_tests --parallel
+    - |
+      valgrind \
+        --tool=memcheck \
+        --leak-check=full \
+        --show-reachable=yes \
+        --num-callers=40 \
+        --track-origins=yes \
+        --error-exitcode=1 \
+        --log-file=valgrind-memcheck.txt \
+        ./build/Debug/tests/microservice_tests
+  artifacts:
+    when: always
+    paths:
+      - valgrind-memcheck.txt
+    expire_in: 2 weeks
+
+# lcov coverage gate ≥ 70 % (mirrors coverage.yml).
+# GitLab parses the coverage percentage from the lcov summary via the regex below.
+coverage:
+  stage: quality
+  image: ubuntu:24.04
+  cache:
+    # Shares the Debug Conan store with the valgrind job (identical build_type).
+    key: "conan-gcc-debug-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .conan2-cache/
+    policy: pull-push
+    fallback_keys:
+      - "conan-gcc-debug-"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: manual
+      allow_failure: true
+  coverage: '/lines\.*: (\d+\.\d+)%/'
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends cmake ninja-build python3-pip lcov
+    - python3 -m pip install "conan>=2,<3"
+    - conan profile detect --force
+    - cp profiles/gcc "$CONAN_HOME/profiles/default"
+  script:
+    - |
+      conan install . --build=missing \
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=Debug \
+        -s:b build_type=Debug
+    - cmake --preset coverage
+    - cmake --build --preset coverage --parallel
+    # cov_data: zero counters → run tests → lcov capture → filter → cov.info.cleaned
+    - cmake --build --preset coverage --target cov_data
+    - COVERAGE=$(lcov --summary build/Coverage/cov.info.cleaned 2>&1 | grep "lines\." | grep -oE '[0-9]+\.[0-9]+' | head -1)
+    - echo "Total line coverage ${COVERAGE}%"
+    - python3 -c "import sys; cov=float('${COVERAGE}'); sys.exit(0 if cov>=70.0 else (print('Coverage '+str(round(cov,1))+'% is below the 70% gate',file=sys.stderr) or 1))"
+  artifacts:
+    paths:
+      - build/Coverage/cov.info.cleaned
+    expire_in: 1 week

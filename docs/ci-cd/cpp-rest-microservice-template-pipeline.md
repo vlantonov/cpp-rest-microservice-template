@@ -39,6 +39,79 @@ push to main only
 
 ---
 
+## GitLab CI Pipeline
+
+**Pipeline file:** `.gitlab-ci.yml`  
+Three stages execute in order: `build` → `test` → `quality`. Independent jobs within a stage run in parallel.
+
+`default: interruptible: true` cancels in-flight runs when a newer commit arrives on the same ref — equivalent to GitHub Actions `concurrency: cancel-in-progress: true`.
+
+### Jobs
+
+| Job | Stage | Trigger | Purpose |
+|---|---|---|---|
+| `docker-build` | build | push→main/develop, MR→main | `docker build --progress=plain .`; unit tests run inside the builder stage via `ctest` — a test failure aborts the Docker build |
+| `build-gcc` | build | push→main/develop, MR→main | GCC Release build + `ctest` |
+| `build-clang` | build | push→main/develop, MR→main | Clang 16 Release build + `ctest` |
+| `sanitizer-asan` | test | MR→main (auto), manual (allow\_failure) | ASAN on Clang 16 RelWithDebInfo |
+| `sanitizer-tsan` | test | MR→main (auto), manual (allow\_failure) | TSAN on Clang 16 RelWithDebInfo |
+| `sanitizer-ubsan` | test | MR→main (auto), manual (allow\_failure) | UBSAN on Clang 16 RelWithDebInfo |
+| `valgrind` | quality | push→main (auto), manual (allow\_failure) | Valgrind memcheck; artifact `valgrind-memcheck.txt` (2 weeks) |
+| `coverage` | quality | push→main (auto), manual (allow\_failure) | lcov ≥ 70 % gate; artifact `build/Coverage/cov.info.cleaned` (1 week) |
+
+### Stage diagram
+
+```
+push to main / develop                  MR → main
+        │                                    │
+        ▼                                    ▼
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ docker-build │  │  build-gcc   │  │ build-clang  │
+│   (DinD)     │  │   Release    │  │   Release    │
+└──────────────┘  └──────────────┘  └──────────────┘
+
+              MR → main (auto) / manual (allow_failure)
+                             │
+             ┌───────────────┼───────────────┐
+             ▼               ▼               ▼
+     ┌───────────────┐ ┌──────────────┐ ┌───────────────┐
+     │sanitizer-asan │ │sanitizer-tsan│ │sanitizer-ubsan│
+     └───────────────┘ └──────────────┘ └───────────────┘
+
+            push to main (auto) / manual (allow_failure)
+                             │
+                    ┌────────┴────────┐
+                    ▼                 ▼
+             ┌──────────┐     ┌──────────┐
+             │ valgrind │     │ coverage │
+             └──────────┘     └──────────┘
+```
+
+### Caching strategy
+
+`CONAN_HOME` is set to `$CI_PROJECT_DIR/.conan2-cache` so all Conan-managed paths fall inside the workspace directory and are captured by GitLab's native cache mechanism. Each job uses `policy: pull-push`.
+
+| Cache key | Fallback key | Used by |
+|---|---|---|
+| `conan-gcc-release-<ref>` | `conan-gcc-release-` | `build-gcc` |
+| `conan-clang-release-<ref>` | `conan-clang-release-` | `build-clang` |
+| `conan-clang-asan-<ref>` | `conan-clang-asan-` | `sanitizer-asan` |
+| `conan-clang-tsan-<ref>` | `conan-clang-tsan-` | `sanitizer-tsan` |
+| `conan-clang-ubsan-<ref>` | `conan-clang-ubsan-` | `sanitizer-ubsan` |
+| `conan-gcc-debug-<ref>` | `conan-gcc-debug-` | `valgrind`, `coverage` (shared) |
+
+The `fallback_keys` entry drops `$CI_COMMIT_REF_SLUG` from the key, so a new branch inherits the last warm cache from any previous run sharing the same compiler and build-type combination.
+
+### Docker-in-Docker (`docker-build`)
+
+`docker-build` runs on `image: docker:27` with a `docker:27-dind` service. TLS is enforced via `DOCKER_TLS_CERTDIR: "/certs"`. Setting `DOCKER_BUILDKIT: "1"` enables BuildKit so the `# syntax=docker/dockerfile:1` frontend directive in the `Dockerfile` takes effect and `--mount=type=cache` is honoured inside the build.
+
+### Coverage badge
+
+The `coverage` job sets `coverage: '/lines\.*: (\d+\.\d+)%/'` so GitLab parses the line-coverage percentage from the `lcov --summary` output and surfaces it as a pipeline badge. A `python3` one-liner in the job script fails the job if line coverage is below 70 %.
+
+---
+
 ## Build system layout (Conan 2 + CMakePresets.json)
 
 `conanfile.py` uses `cmake_layout(self)`, which places generated files under
@@ -56,6 +129,18 @@ layout:
 
 `cmake_layout` sets `generators_folder = build/<build_type>`, so **do not** pass
 `--output-folder` to `conan install` — the layout function controls all paths.
+
+### Dockerfile (multi-stage, BuildKit)
+
+The `Dockerfile` uses a BuildKit frontend (`# syntax=docker/dockerfile:1`). Three categories of cache mount are applied to the builder stage:
+
+| `--mount` target | Scope | Effect |
+|---|---|---|
+| `/var/cache/apt`, `/var/lib/apt` | `apt-get install` | Keeps the apt index off the image layer |
+| `/root/.cache/pip` | `pip install conan` | Skips re-downloading the Conan wheel |
+| `/root/.conan2/p` | `conan install`, `cmake --build`, `ctest` | Conan binary package store persists across rebuilds |
+
+After building `microservice_app` and `microservice_tests`, the builder stage runs `ctest --test-dir build/Release -VV --progress`. A non-zero exit aborts the Docker build before Stage 2 is reached — the final runtime image is only produced when all unit tests pass.
 
 ---
 
@@ -137,6 +222,14 @@ cmake --build --preset coverage --target cov_data
 # Output: build/Coverage/cov.info.cleaned
 # View:   genhtml -o build/Coverage/html build/Coverage/cov.info.cleaned
 ```
+
+### 6. Docker build (with tests)
+
+```bash
+DOCKER_BUILDKIT=1 docker build --progress=plain .
+```
+
+Tests are executed inside the builder stage via `ctest`; a test failure aborts the build before Stage 2 (the runtime image) is reached.
 
 ---
 
