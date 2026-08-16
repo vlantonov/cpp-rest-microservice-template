@@ -75,7 +75,7 @@ graph TD
 
 - CMake 3.21+
 - Conan 2 (`pip install "conan>=2,<3"`)
-- GCC 12+ **or** Clang 16+
+- GCC 13+ **or** Clang 16+
 - Ninja
 - Python 3.10+
 - Docker (optional, for container builds)

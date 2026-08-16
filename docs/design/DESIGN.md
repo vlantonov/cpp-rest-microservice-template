@@ -284,7 +284,7 @@ sequenceDiagram
 microservice_tests  (executable, registered with CTest)
     │
     ├── PRIVATE  microservice_domain
-    ├── PRIVATE  microservice_infra
+    ├── PRIVATE  spdlog::spdlog            (SpdlogLogger.cpp compiled directly)
     ├── PRIVATE  Catch2::Catch2WithMain
     └── PRIVATE  fakeit::fakeit           (header-only INTERFACE target)
 
@@ -346,7 +346,7 @@ Extra `lcov` flag: `--ignore-errors unused`
 os=Linux
 arch=x86_64
 compiler=gcc
-compiler.version=12
+compiler.version=13
 compiler.libcxx=libstdc++11
 compiler.cppstd=20
 build_type=Release
@@ -610,7 +610,7 @@ on:
 | # | Decision | Chosen | Alternative | Rationale |
 |---|---|---|---|---|
 | DD-01 | HTTP framework | Drogon | Crow, Pistache, cpp-httplib | Async by default, active maintenance, Conan-available, C++20 coroutine support |
-| DD-02 | Domain error handling | `std::expected<T,E>` (C++23 in GCC 12 stdlib under C++20 mode) | Exceptions | `noexcept` adapter boundaries forbid exception propagation; `expected` gives type-safe error paths |
+| DD-02 | Domain error handling | `std::expected<T,E>` (C++23 in GCC 13 stdlib under C++20 mode) | Exceptions | `noexcept` adapter boundaries forbid exception propagation; `expected` gives type-safe error paths |
 | DD-03 | DI strategy | Manual `DependencyContainer` struct | Fruit, Boost.DI | Dependency graph is small; framework adds build complexity and obscures ownership |
 | DD-04 | Metrics exposure | `MetricsController` in Drogon serves `/metrics` | prometheus-cpp pull-server on separate port | Single port simplifies K8s Service config and avoids dual-server lifecycle management |
 | DD-05 | Span ownership | `std::unique_ptr<ISpan>` returned to caller | Thread-local span propagation | Explicit ownership matches Drogon's async dispatch model; avoids thread-local pitfalls |
@@ -642,7 +642,7 @@ on:
 | Drogon's coroutine-based async model conflicts with FakeIt synchronous mocks in controller tests | Medium | Medium | Unit-test use-cases directly (no Drogon involved); keep controller tests as lightweight integration tests using Drogon's built-in test helpers |
 | Runtime Docker image exceeds 150 MB (NFR-08) due to dynamic Drogon/OTel dependencies | Medium | Low | Audit with `docker image inspect`; strip binary; copy only required `.so` files; consider static linking of spdlog and prometheus-cpp |
 | MSAN false positives from uninstrumented C++ standard library | High | Low | Document as known limitation (CA-04); do not fail CI on MSAN; gate correctness on ASAN + Valgrind instead |
-| `std::expected` availability in GCC 12 under `-std=c++20` (technically a C++23 feature) | Medium | Medium | Verify at compiler detection time; fall back to a bundled `tl::expected` header-only library if needed |
+| `std::expected` availability in GCC 13 under `-std=c++20` (technically a C++23 feature) | Medium | Medium | Verify at compiler detection time; fall back to a bundled `tl::expected` header-only library if needed |
 
 ---
 
