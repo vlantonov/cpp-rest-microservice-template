@@ -38,4 +38,10 @@ class MicroserviceTemplate(ConanFile):
         deps = CMakeDeps(self)
         deps.generate()
         tc = CMakeToolchain(self)
+        if self.settings.get_safe("compiler") == "gcc":
+            # GCC does not accept -stdlib=; propagate the ABI flag directly.
+            tc.blocks.remove("libcxx")
+            libcxx = self.settings.get_safe("compiler.libcxx")
+            abi_value = "1" if libcxx == "libstdc++11" else "0"
+            tc.preprocessor_definitions["_GLIBCXX_USE_CXX11_ABI"] = abi_value
         tc.generate()

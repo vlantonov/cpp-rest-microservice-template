@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **GCC CI — spurious `-stdlib=libstdc++` flag**: Conan's `CMakeToolchain` was emitting `-stdlib=libstdc++` for the GCC profile because `compiler.libcxx=libstdc++11` was set. Fixed by removing the `libcxx`-based toolchain block for GCC in `conanfile.py` and asserting `_GLIBCXX_USE_CXX11_ABI=1` directly via a preprocessor definition instead.
+- **Clang CI — `prometheus/counter.h` not found**: `prometheus-cpp::core` was linked `PRIVATE` to `microservice_infra`, so its include directories were not propagated to `microservice_app`. Fixed by changing the linkage to `PUBLIC` in `src/infrastructure/CMakeLists.txt`.
+- **Both CI matrices — `fakeit/catch/fakeit.hpp` not found**: The FakeIt Catch2 integration header moved to `fakeit/catch2/fakeit.hpp` in recent releases; the old path no longer exists in the installed package. Fixed by updating the include to `<fakeit/catch2/fakeit.hpp>` in the test sources. Corrected the corresponding reference in `docs/design/DESIGN.md`.
+
 ## [0.1.3] - 2026-08-16
 
 ### Fixed

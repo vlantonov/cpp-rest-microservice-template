@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <fakeit/catch/fakeit.hpp>
+#include <fakeit/catch2/fakeit.hpp>
 
 #include "infrastructure/logging/SpdlogLogger.hpp"
 #include "domain/ports/ILogger.hpp"

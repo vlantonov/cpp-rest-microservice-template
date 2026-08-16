@@ -17,7 +17,7 @@ target_link_libraries(microservice_infra
     PRIVATE Drogon::Drogon
     PRIVATE spdlog::spdlog
     PRIVATE opentelemetry-cpp::opentelemetry-cpp
-    PRIVATE prometheus-cpp::core
+    PUBLIC  prometheus-cpp::core
 )
 
 target_compile_features(microservice_infra PUBLIC cxx_std_20)
