@@ -14,9 +14,9 @@ add_library(microservice_infra STATIC
 
 target_link_libraries(microservice_infra
     PUBLIC  microservice_domain
-    PRIVATE Drogon::Drogon
+    PUBLIC  Drogon::Drogon
     PRIVATE spdlog::spdlog
-    PRIVATE opentelemetry-cpp::opentelemetry-cpp
+    PUBLIC  opentelemetry-cpp::opentelemetry-cpp
     PUBLIC  prometheus-cpp::core
 )
 
