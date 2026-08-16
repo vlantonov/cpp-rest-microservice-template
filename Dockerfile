@@ -8,8 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         ninja-build \
-        gcc-12 \
-        g++-12 \
+        gcc \
+        g++ \
         python3-pip \
         python3-venv \
         git \
@@ -17,10 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
         libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Use GCC 12 as default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
 
 # Install Conan 2 into a virtual env to avoid PEP 668 issues
 RUN python3 -m venv /opt/conan-venv \
@@ -34,15 +30,16 @@ RUN conan profile detect --force
 WORKDIR /src
 COPY . .
 
+# Use the project GCC profile as the Conan default
+RUN cp profiles/gcc ~/.conan2/profiles/default
+
 # Install Conan dependencies (Release build)
 RUN conan install . \
-        --output-folder=build/Release \
         --build=missing \
-        -s build_type=Release \
-        -s compiler=gcc \
-        -s compiler.version=12 \
-        -s compiler.libcxx=libstdc++11 \
-        -s compiler.cppstd=20
+        --profile:host=default \
+        --profile:build=default \
+        -s:h build_type=Release \
+        -s:b build_type=Release
 
 # Configure and build
 RUN cmake --preset release \
