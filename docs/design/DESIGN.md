@@ -401,7 +401,7 @@ class MicroserviceTemplate(ConanFile):
 | opentelemetry-cpp | `opentelemetry-cpp/1.16.1` | Apache-2.0 | Pulls grpc + protobuf; cache Conan pkgs in CI |
 | prometheus-cpp | `prometheus-cpp/1.2.4` | MIT | `core` only (see OQ-01) |
 | Catch2 | `catch2/3.7.1` | BSL-1.0 | Use `Catch2::Catch2WithMain` CMake target |
-| FakeIt | `fakeit/2.4.1` | MIT | Header-only; include `fakeit/catch2/fakeit.hpp` |
+| FakeIt | `fakeit/2.4.1` | MIT | Header-only; include `catch2/fakeit.hpp` |
 
 ---
 
