@@ -11,6 +11,7 @@ build_type=Release
 # Tell cmake_layout that Ninja (single-config) is used so generators land at
 # build/<build_type>/generators/ rather than the flat build/generators/ path.
 tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:compiler_executables={"c": "gcc", "cpp": "g++"}
 
 [buildenv]
 CC=gcc

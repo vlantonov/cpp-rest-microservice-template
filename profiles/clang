@@ -9,9 +9,8 @@ build_type=Release
 
 [conf]
 tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:compiler_executables={"c": "clang-16", "cpp": "clang++-16"}
 
 [buildenv]
-CC=clang-16
-CXX=clang++-16
 CC=clang-16
 CXX=clang++-16
