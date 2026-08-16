@@ -54,7 +54,7 @@ build-gcc:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -87,7 +87,7 @@ build-clang:
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv clang-16 clang++-16
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -125,7 +125,7 @@ sanitizer-asan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv clang-16 clang++-16
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -158,7 +158,7 @@ sanitizer-tsan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv clang-16 clang++-16
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -191,7 +191,7 @@ sanitizer-ubsan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv clang-16 clang++-16
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -229,7 +229,7 @@ valgrind:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv valgrind
+    - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv valgrind
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -280,7 +280,7 @@ coverage:
   coverage: '/lines\.*: (\d+\.\d+)%/'
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake ninja-build make python3-venv lcov
+    - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv lcov
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
