@@ -16,3 +16,10 @@ target_link_libraries(microservice_app
 
 target_compile_features(microservice_app PRIVATE cxx_std_20)
 target_compile_options(microservice_app PRIVATE -Wall -Wextra -Wpedantic)
+
+if(ENABLE_COVERAGE)
+    target_compile_options(microservice_app PRIVATE
+        -g -O0 -fprofile-arcs -ftest-coverage
+    )
+    target_link_options(microservice_app PRIVATE --coverage)
+endif()
