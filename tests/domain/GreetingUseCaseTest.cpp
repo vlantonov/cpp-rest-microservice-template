@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/fakeit.hpp>
+#include <fakeit.hpp>
 
 #include "domain/model/GreetingRequest.hpp"
 #include "domain/ports/ILogger.hpp"
