@@ -12,6 +12,8 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 
 option(ENABLE_COVERAGE "Enable coverage instrumentation" OFF)
 
+enable_testing()
+
 add_subdirectory(src/domain)
 add_subdirectory(src/infrastructure)
 add_subdirectory(src/application)
