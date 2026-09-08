@@ -67,7 +67,7 @@ jobs:
         run: cmake --build --preset coverage --target cov_data
 
       - name: Publish coverage report
-        uses: zgosalvez/github-actions-report-lcov@v7.2.0
+        uses: zgosalvez/github-actions-report-lcov@v7.2.1
         with:
           coverage-files: build/Coverage/cov.info.cleaned
           minimum-coverage: 70
