@@ -33,6 +33,8 @@ docker-build:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - docker version
   script:
@@ -52,6 +54,8 @@ build-gcc:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv
@@ -85,6 +89,8 @@ build-clang:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 llvm-16 git curl pkg-config libssl-dev python3-venv
