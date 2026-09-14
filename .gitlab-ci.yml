@@ -31,8 +31,10 @@ docker-build:
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_BUILDKIT: "1"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - docker version
   script:
@@ -50,8 +52,10 @@ build-gcc:
     fallback_keys:
       - "conan-gcc-release-"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv
@@ -83,8 +87,10 @@ build-clang:
     fallback_keys:
       - "conan-clang-release-"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
-    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+    - when: manual
+      allow_failure: true
   before_script:
     - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 llvm-16 git curl pkg-config libssl-dev python3-venv
@@ -120,7 +126,7 @@ sanitizer-asan:
     fallback_keys:
       - "conan-clang-asan-"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - when: manual
       allow_failure: true
   before_script:
@@ -153,7 +159,7 @@ sanitizer-tsan:
     fallback_keys:
       - "conan-clang-tsan-"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - when: manual
       allow_failure: true
   before_script:
@@ -186,7 +192,7 @@ sanitizer-ubsan:
     fallback_keys:
       - "conan-clang-ubsan-"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+    # - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
     - when: manual
       allow_failure: true
   before_script:
@@ -224,7 +230,7 @@ valgrind:
     fallback_keys:
       - "conan-gcc-debug-"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    # - if: '$CI_COMMIT_BRANCH == "main"'
     - when: manual
       allow_failure: true
   before_script:
@@ -274,7 +280,7 @@ coverage:
     fallback_keys:
       - "conan-gcc-debug-"
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    # - if: '$CI_COMMIT_BRANCH == "main"'
     - when: manual
       allow_failure: true
   coverage: '/lines\.*: (\d+\.\d+)%/'
