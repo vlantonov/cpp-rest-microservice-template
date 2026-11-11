@@ -9,9 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Cache mounts keep apt indexes off the image layer; no rm -rf needed here.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    rm -f /etc/apt/apt-mirrors.txt \
- && apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 \
- && apt-get install -y --no-install-recommends \
+    apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         ninja-build \
         gcc \
@@ -68,9 +66,7 @@ FROM ubuntu:26.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN rm -f /etc/apt/apt-mirrors.txt \
- && apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 \
- && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
         libstdc++6 \
         libssl3 \
         ca-certificates \

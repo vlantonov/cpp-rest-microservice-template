@@ -57,8 +57,7 @@ build-gcc:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -93,8 +92,7 @@ build-clang:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ llvm git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -132,8 +130,7 @@ sanitizer-asan:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -166,8 +163,7 @@ sanitizer-tsan:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -200,8 +196,7 @@ sanitizer-ubsan:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -239,8 +234,7 @@ valgrind:
     - when: manual
       allow_failure: true
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv valgrind
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
@@ -291,8 +285,7 @@ coverage:
       allow_failure: true
   coverage: '/lines\.*: (\d+\.\d+)%/'
   before_script:
-    - rm -f /etc/apt/apt-mirrors.txt
-    - apt-get update -o Acquire::Retries=5 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+    - apt-get update
     - apt-get install -y --no-install-recommends cmake make ninja-build gcc g++ git curl pkg-config libssl-dev python3-venv lcov
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
