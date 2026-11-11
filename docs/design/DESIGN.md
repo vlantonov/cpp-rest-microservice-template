@@ -592,14 +592,14 @@ on:
 
 | Job | Runner | Key steps |
 |---|---|---|
-| `build-gcc` | ubuntu-latest | Install Conan2 + GCC profile; `conan install`; `cmake --preset release`; `ctest`; `upload-artifact@v7` |
-| `build-clang` | ubuntu-latest | Install Conan2 + Clang profile; same build flow; no artifact upload |
-| `asan` | ubuntu-latest | `download-artifact@v8`; rebuild with `--preset asan`; run tests; check exit code |
-| `tsan` | ubuntu-latest | Rebuild with `--preset tsan`; run tests |
-| `msan` | ubuntu-latest | Rebuild with `--preset msan` (requires libc++ with MSAN); annotate if stdlib not instrumented (CA-04) |
-| `ubsan` | ubuntu-latest | Rebuild with `--preset ubsan`; run tests |
-| `valgrind` | ubuntu-latest | `apt install valgrind`; `download-artifact@v8`; `valgrind --error-exitcode=1 ./microservice_tests` |
-| `coverage` | ubuntu-latest | `cmake --preset coverage`; `cmake --build --target cov_data`; publish via report-lcov action |
+| `build-gcc` | ubuntu-24.04 | Install Conan2 + GCC profile; `conan install`; `cmake --preset release`; `ctest`; `upload-artifact@v7` |
+| `build-clang` | ubuntu-24.04 | Install Conan2 + Clang profile; same build flow; no artifact upload |
+| `asan` | ubuntu-24.04 | `download-artifact@v8`; rebuild with `--preset asan`; run tests; check exit code |
+| `tsan` | ubuntu-24.04 | Rebuild with `--preset tsan`; run tests |
+| `msan` | ubuntu-24.04 | Rebuild with `--preset msan` (requires libc++ with MSAN); annotate if stdlib not instrumented (CA-04) |
+| `ubsan` | ubuntu-24.04 | Rebuild with `--preset ubsan`; run tests |
+| `valgrind` | ubuntu-24.04 | `apt install valgrind`; `download-artifact@v8`; `valgrind --error-exitcode=1 ./microservice_tests` |
+| `coverage` | ubuntu-24.04 | `cmake --preset coverage`; `cmake --build --target cov_data`; publish via report-lcov action |
 
 > **Note:** Sanitizer jobs re-compile from source rather than downloading the Release binary because instrumentation flags must be present at compile time. Only `valgrind` reuses the Release test binary.
 

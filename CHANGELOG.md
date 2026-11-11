@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **CI — `clang-16 has no installation candidate` on GitHub Actions**: `ubuntu-latest` moved to Ubuntu 26.04 ("resolute"), which no longer packages `clang-16`, breaking the clang build matrix and the ASAN/TSAN/UBSAN sanitizer jobs at `apt-get install`. Pinned all GitHub Actions runners (`build.yml`, `sanitizers.yml`, `coverage.yml`, `valgrind.yml`) to `ubuntu-24.04` (noble), whose default toolchain is GCC 13 and clang-16, matching `profiles/gcc` and `profiles/clang` and aligning with the GitLab CI `ubuntu:24.04` image. Updated `docs/design/DESIGN.md` and `docs/requirements/SRS.md` (CA-03) accordingly.
+
 ## [0.1.4] - 2026-08-16
 
 ### Fixed

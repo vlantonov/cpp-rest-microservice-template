@@ -12,7 +12,9 @@ concurrency:
 jobs:
   coverage:
     name: Code Coverage (GCC)
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble) so the runner's default GCC is 13, matching
+    # profiles/gcc; keeps CI aligned with the GitLab ubuntu:24.04 image.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout

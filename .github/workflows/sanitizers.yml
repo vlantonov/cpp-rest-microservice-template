@@ -19,7 +19,9 @@ jobs:
   # ── AddressSanitizer ───────────────────────────────────────────────────────
   asan:
     name: AddressSanitizer
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble) because it packages clang-16 (profiles/clang);
+    # ubuntu-latest moved to 26.04, which no longer provides clang-16.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -70,7 +72,9 @@ jobs:
   # ── ThreadSanitizer ────────────────────────────────────────────────────────
   tsan:
     name: ThreadSanitizer
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble) because it packages clang-16 (profiles/clang);
+    # ubuntu-latest moved to 26.04, which no longer provides clang-16.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -119,7 +123,9 @@ jobs:
   # ── UndefinedBehaviourSanitizer ────────────────────────────────────────────
   ubsan:
     name: UndefinedBehaviourSanitizer
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble) because it packages clang-16 (profiles/clang);
+    # ubuntu-latest moved to 26.04, which no longer provides clang-16.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout

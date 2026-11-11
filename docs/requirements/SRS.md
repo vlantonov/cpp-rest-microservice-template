@@ -141,7 +141,7 @@ The primary audience is the System Architect agent and future contributors. All 
 |----|------------------------|
 | CA-01 | Conan 2 (not Conan 1) is the only supported package manager. Conan 1 compatibility is not required. |
 | CA-02 | CMake presets (`CMakePresets.json`) shall be used to define `debug`, `release`, and `coverage` configurations. |
-| CA-03 | The CI runner environment is `ubuntu-latest` (currently ubuntu-22.04 or ubuntu-24.04 as provided by GitHub-hosted runners). |
+| CA-03 | The CI runner environment is pinned to `ubuntu-24.04` (noble), whose default toolchain is GCC 13 and clang-16, matching `profiles/gcc` and `profiles/clang`. `ubuntu-latest` is avoided because it has moved to 26.04, which no longer packages clang-16. |
 | CA-04 | MSAN builds require a memory-instrumented C++ standard library. The CI job for MSAN is permitted to use a pre-built libc++ with MSAN instrumentation or to skip the standard library sanitisation and annotate the limitation. |
 | CA-05 | The scaffold does not implement business logic beyond a minimal demonstrative use-case; it is a template, not a production service. |
 | CA-06 | No persistent storage (database, file system) is required for the scaffold. |

@@ -14,7 +14,10 @@ concurrency:
 jobs:
   build:
     name: Build (${{ matrix.compiler }}, Release)
-    runs-on: ubuntu-latest
+    # Pinned to 24.04 (noble): its default toolchain is GCC 13 and clang-16,
+    # matching profiles/gcc and profiles/clang. ubuntu-latest moved to 26.04,
+    # which no longer packages clang-16.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
