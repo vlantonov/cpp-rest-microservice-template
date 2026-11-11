@@ -43,7 +43,7 @@ docker-build:
 # GCC Release build + unit tests (mirrors build.yml gcc matrix entry).
 build-gcc:
   stage: build
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-gcc-release-$CI_COMMIT_REF_SLUG"
     paths:
@@ -75,10 +75,10 @@ build-gcc:
     - cmake --build --preset release --parallel
     - ctest --test-dir build/Release -VV --progress
 
-# Clang 16 Release build + unit tests (mirrors build.yml clang matrix entry).
+# Clang Release build + unit tests (mirrors build.yml clang matrix entry).
 build-clang:
   stage: build
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-clang-release-$CI_COMMIT_REF_SLUG"
     paths:
@@ -93,7 +93,7 @@ build-clang:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 llvm-16 git curl pkg-config libssl-dev python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ llvm git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -117,7 +117,7 @@ build-clang:
 
 sanitizer-asan:
   stage: test
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-clang-asan-$CI_COMMIT_REF_SLUG"
     paths:
@@ -131,7 +131,7 @@ sanitizer-asan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 libclang-rt-16-dev git curl pkg-config libssl-dev python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -150,7 +150,7 @@ sanitizer-asan:
 
 sanitizer-tsan:
   stage: test
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-clang-tsan-$CI_COMMIT_REF_SLUG"
     paths:
@@ -164,7 +164,7 @@ sanitizer-tsan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 libclang-rt-16-dev git curl pkg-config libssl-dev python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -183,7 +183,7 @@ sanitizer-tsan:
 
 sanitizer-ubsan:
   stage: test
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-clang-ubsan-$CI_COMMIT_REF_SLUG"
     paths:
@@ -197,7 +197,7 @@ sanitizer-ubsan:
       allow_failure: true
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang-16 clang++-16 libclang-rt-16-dev git curl pkg-config libssl-dev python3-venv
+    - apt-get install -y --no-install-recommends cmake make ninja-build g++ clang clang++ libclang-rt-dev git curl pkg-config libssl-dev python3-venv
     - python3 -m venv /opt/conan-venv
     - /opt/conan-venv/bin/pip install --no-cache-dir "conan>=2,<3"
     - export PATH="/opt/conan-venv/bin:$PATH"
@@ -221,7 +221,7 @@ sanitizer-ubsan:
 
 valgrind:
   stage: quality
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     key: "conan-gcc-debug-$CI_COMMIT_REF_SLUG"
     paths:
@@ -270,7 +270,7 @@ valgrind:
 # GitLab parses the coverage percentage from the lcov summary via the regex below.
 coverage:
   stage: quality
-  image: ubuntu:24.04
+  image: ubuntu:26.04
   cache:
     # Shares the Debug Conan store with the valgrind job (identical build_type).
     key: "conan-gcc-debug-$CI_COMMIT_REF_SLUG"

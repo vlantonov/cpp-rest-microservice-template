@@ -24,7 +24,7 @@ jobs:
             extra_packages: ""
           - compiler: clang
             conan_profile: clang
-            extra_packages: clang-16 clang++-16
+            extra_packages: clang clang++
 
     steps:
       - name: Checkout
