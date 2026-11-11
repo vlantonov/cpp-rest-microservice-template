@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CI — `undefined reference to __memset_explicit_chk` when linking `microservice_app`**: The GitHub Actions Conan cache was keyed on `${{ runner.os }}`, which is only ever `Linux` and cannot distinguish runner images. A `libcurl/8.23.0` binary built on a newer image (`ubuntu-latest`/26.04, glibc 2.42+, where curl's `curlx_memzero` resolves to the fortified `__memset_explicit_chk`) was restored via `restore-keys` onto the glibc-2.39 `ubuntu-24.04` runner, where that symbol does not exist, breaking the Release link. Re-keyed all Conan caches (`build.yml`, `sanitizers.yml`, `coverage.yml`, `valgrind.yml`) on the runner's `${{ env.ImageOS }}` (e.g. `ubuntu24`), which both invalidates the poisoned `conan-Linux-*` caches and prevents newer-glibc binaries from being restored onto older images.
 - **CI — `clang-16 has no installation candidate` on GitHub Actions**: `ubuntu-latest` moved to Ubuntu 26.04 ("resolute"), which no longer packages `clang-16`, breaking the clang build matrix and the ASAN/TSAN/UBSAN sanitizer jobs at `apt-get install`. Pinned all GitHub Actions runners (`build.yml`, `sanitizers.yml`, `coverage.yml`, `valgrind.yml`) to `ubuntu-24.04` (noble), whose default toolchain is GCC 13 and clang-16, matching `profiles/gcc` and `profiles/clang` and aligning with the GitLab CI `ubuntu:24.04` image. Updated `docs/design/DESIGN.md` and `docs/requirements/SRS.md` (CA-03) accordingly.
 
 ## [0.1.4] - 2026-08-16
