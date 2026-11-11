@@ -4,7 +4,7 @@ from conan.tools.cmake import CMakeDeps, CMakeToolchain, cmake_layout
 
 class MicroserviceTemplate(ConanFile):
     name = "cpp-rest-microservice-template"
-    version = "1.0.0"
+    version = "0.1.5"
     settings = "os", "compiler", "build_type", "arch"
 
     def layout(self):
